@@ -35,6 +35,7 @@ import urllib2
 from bs4 import BeautifulSoup
 
 url = r'http://index.10jqka.com.cn/list/field/0881155/'
+url = 'http://q.10jqka.com.cn/stock/thshy/'
 req = urllib2.Request(url)
 con = urllib2.urlopen(req)
 doc = con.read()
@@ -112,20 +113,19 @@ class TrainDataCrawler(object):
 
     def _get_industry_code_list(self, parser='html.parser', from_encoding='utf8'):
 
-        url = r'http://q.10jqka.com.cn/stock/thshy/bsjd/'
         doc = self._get_html(url)
-        soup = BeautifulSoup(doc, parser, from_encoding)
+        soup = BeautifulSoup(doc, 'html.parser', from_encoding=from_encoding)
         result_temp = soup.find_all('div', attrs={'class':'cate_items'})
-        industry_name = []
+        industry_urls = []
+        result = []
         for line in result_temp:
-            industry_name.append(line.a.string)
-        for name in industry_name:
-            final_url = r'http://q.10jqka.com.cn/stock/thshy/' + name
-            doc = self._get_html(final_url)
-            soup = BeautifulSoup(doc, parser, from_encoding)
-            result_temp = soup.find_all('div', attrs={'class':'stock_name'})
-            code_temp = result_temp[0].span.string
-            result = re.findall('[0-9]{6}', code_temp)[0]
+            for item in line.find_all('a'):
+                industry_urls.append(item['href'])
+        for industry_url in industry_urls:
+            doc = self._get_html(industry_url)
+            soup = BeautifulSoup(doc, 'html.parser', from_encoding=from_encoding)
+            result_temp = soup.find_all('input', attrs={'id':'gn_code'})
+            result.append(result_temp[0]['value'])
         return result
 
     def main(self):
