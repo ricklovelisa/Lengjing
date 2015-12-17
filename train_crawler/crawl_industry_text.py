@@ -140,7 +140,7 @@ class CrawlText(object):
                 for text_url in text_url_list_temp:
                     text_content = self._get_text_content(text_url, self.from_encoding)
                     sql = "INSERT INTO indus_text_with_label ('indus_code'," \
-                          " 'title', 'content') VALUE ('%s', '%s', '%s')" % \
+                          " 'title', 'content') VALUES ('%s', '%s', '%s')" % \
                           (indus_code, text_content['title'], text_content['content'])
                     self.input_output.insert_data(sql)
         self.conn.commit()
