@@ -30,14 +30,13 @@
 #
 # --------------------------------------------------------------------
 
-import MySQLdb
 
 class InputOutput(object):
 
-    def __init__(self, conn):
+    def __init__(self, conn, cursor):
 
         self.conn = conn
-        self.cursor = self.conn.cursor()
+        self.cursor = cursor
 
     def get_data(self, sql):
 
@@ -63,5 +62,3 @@ class InputOutput(object):
         except Exception, e:
             print e
         self.conn.commit()
-
-

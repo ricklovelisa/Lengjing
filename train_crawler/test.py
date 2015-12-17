@@ -1,8 +1,13 @@
 import urllib2
+import MySQLdb
+# from input_output import InputOutput
 from bs4 import BeautifulSoup
 
-seed_url = 'http://q.10jqka.com.cn/stock/thshy/'
-from_encoding = 'gbk'
+from_encoding = 'GBK'
+conn = MySQLdb.connect(host='127.0.0.1', user='root',
+                       passwd='root', db='stock',
+                       charset='utf8')
+cursor = conn.cursor(cursorclass=MySQLdb.cursors.DictCursor)
 
 def _get_html(url):
 
@@ -15,38 +20,47 @@ def _get_html(url):
 def _get_page_nums(soup):
 
         page_num = soup.find_all('div', attrs={'class':'list_pager'})
-        num = 0
-        for i in page_num[0].find_all('a'):
-            n = i.string
-            if n.isdigit() and n > num:
-                num = n
-        return num
+        if page_num[0].find_all('a', attrs={'class':'end'}):
+            max_page = page_num[0].find_all('a', attrs={'class':'end'})[0]['href']
+            max = max_page.split('_')[1].split('.')[0]
+        else:
+            max = 1
+        return int(max)
 
-def _get_text_url_list( url, from_encoding='utf8'):
+def _get_indus_page_list(from_encoding):
+
+        sql = "select * from indus_info"
+        code_name = input_output.get_data(sql)
+        indus_page = {}
+        for line in code_name:
+            temp_url = 'http://field.10jqka.com.cn/list/field/'\
+                       + line['indus_code'] + '/'
+            doc = _get_html(temp_url)
+            soup = BeautifulSoup(doc, 'html.parser',
+                                 from_encoding=from_encoding)
+            print line['indus_code'], line['indus_name']
+            page_counts = _get_page_nums(soup)
+            page_url_list = []
+            for page in range(1, page_counts+1):
+                page_url = temp_url + 'index_' + unicode(page) + '.shtml'
+                page_url_list.append(page_url)
+            indus_page[line['indus_code']] = page_url_list
+        return indus_page
+
+def _get_text_url_list(url, from_encoding='utf8'):
 
         doc = _get_html(url)
-        soup = BeautifulSoup(doc, parser=parser, from_encoding=from_encoding)
+        soup = BeautifulSoup(doc, 'html.parser', from_encoding=from_encoding)
         text_list = soup.find_all('div', attrs={'class':'list_item'})
         url_list = []
         for line in text_list:
             url_list.append(line.a['href'])
         return url_list
 
-def _get_industry_page_list(url, code, parser='html.parser', from_encoding='utf8'):
+def _get_text_content(url, from_encoding):
 
         doc = _get_html(url)
-        soup = BeautifulSoup(doc, parser, from_encoding)
-        page_nums = _get_page_nums(soup)
-        url_list = []
-        for i in range(page_nums):
-            url_temp = url + i + '.shtml'
-            url_list.append(url_temp)
-        return url_list
-
-def _get_text_content(url, parser='html.parser', from_encoding='utf8'):
-
-        doc = _get_html(url)
-        soup = BeautifulSoup(doc, parser, from_encoding)
+        soup = BeautifulSoup(doc, 'html.parser', from_encoding=from_encoding)
         text = soup.find_all('div', attrs={'id':'J_article'})
         head_temp = text[0].find_all('div', attrs={'class':'art_head'})
         head = head_temp[0].h1.string
@@ -56,22 +70,4 @@ def _get_text_content(url, parser='html.parser', from_encoding='utf8'):
         for line in content_temp:
             content.append(line.string)
         result = {'head':head, 'content':content}
-        return result
-
-def _get_industry_code_list(url, from_encoding='utf8'):
-
-        doc = _get_html(url)
-        soup = BeautifulSoup(doc, 'html.parser', from_encoding=from_encoding)
-        result_temp = soup.find_all('div', attrs={'class':'cate_items'})
-        industry_urls, result = [], {}
-        for line in result_temp:
-            for item in line.find_all('a'):
-                industry_urls.append(item['href'])
-        for industry_url in industry_urls:
-            doc = _get_html(industry_url)
-            soup = BeautifulSoup(doc, 'html.parser', from_encoding=from_encoding)
-            result_temp = soup.find_all('div', attrs={'class':'stock_name'})
-            name = result_temp[0].h2.string
-            code = result_temp[0].input['value']
-            result[code] = name
         return result

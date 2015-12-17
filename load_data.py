@@ -73,7 +73,7 @@ class LoadData(object):
         Args:
             no
         """
-        server_ip = '192.168.0.2'
+        server_ip = '192.168.1.24'
         server_port = 6379
         # redis1 = redis.StrictRedis(host=server_ip, port=server_port,
         #                            db=0, password='7ifW4i@M')
@@ -303,10 +303,6 @@ class LoadData(object):
 
 
 if __name__ == '__main__':
-    """Main function.
 
-        Args:
-            no
-   """
     load = LoadData('D:/home/jsdx/jsdx_2015111313')
     load.main()
