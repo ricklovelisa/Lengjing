@@ -55,7 +55,7 @@ class InputOutput(object):
             print e
         self.conn.commit()
 
-    def insert_data(self, sql):
+    def insert_data(self, sql, url):
 
         try:
             self.cursor.execute(sql)

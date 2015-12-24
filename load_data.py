@@ -40,6 +40,7 @@ Load data to redis and mysql
 """
 import re
 import time
+import math
 import redis
 import string
 
@@ -95,90 +96,38 @@ class LoadData(object):
             self.quan_pins.append(redis1.get('stock:%s:quanpin'
                                              % stock_code))
 
-    def _counts(self, file):
-
-        """initiate class
-
-        Load  stock data  time to redis.
-
-        Attributes:
-            file: data file
-        """
-        i = 0
-        for line in file:
-            i += 1
-        # file.seek(0)
-        return i
-
     def main(self):
         """Main function.
 
         Args:
             no
         """
-        # start = time.time()
-        # open_file = open(self.input_file, 'r')
+        open_file = open(self.input_file, 'r')
         # k = 1
         # for line in open_file:
         #     self._line_to_mysql_and_redis(line)
         #     self.pipe2.execute()
         #     k += 1
         #     print k
-        count = self._counts(self.input_file)
+        count = -1
+        for count, lines in enumerate(open_file):
+            pass
+        count += 1
+        open_file.close()
+        open_file = open(self.input_file, 'r')
         j = 1
         k = 1
-        for line in self.input_file:
+        for line in open_file:
             self._line_to_mysql_and_redis(line)
             if k == count:
                 self.pipe2.execute()
-                print 'load finished'
-            elif k > (j * 50000):
+                print '%s load finished' % self.input_file
+            elif k > (j * 500000):
                 self.pipe2.execute()
-                print j
                 j += 1
+                print j
             k += 1
-        # open_file.close()
-        # end = time.time()
-
-        # for line in self.input_file:
-        #     self._line_to_mysql_and_redis(line)
-        # self.pipe2.execute()
-
-        # file = open(self.input_file, 'r')
-        # row_nums = self._counts(file)
-        # seg_ID = self._get_seg_ID(row_nums, 500000)
-        # data = {}
-        # for key in seg_ID:
-        #     data[key] = []
-        # counter = 0
-        # for line in file:
-        #     for key in seg_ID:
-        #         head = seg_ID[key][0]
-        #         end = seg_ID[key][1]
-        #         if head < counter < end:
-        #             data[key].append(line)
-        #     counter += 1
-        #
-        # for line in data[0]:
-        #     self._line_to_mysql_and_redis(line)
-        # self.pipe2.execute()
-
-
-    def _get_seg_ID(self, row_nums, k):
-
-        """initiate class
-
-        Get start ID of each block.
-
-        Attributes:
-            n: the row nums of file
-            k: the num of loading data every time.
-        """
-        n = row_nums/k
-        result = {}
-        for i in range(0, n+1):
-            result[i] = (i*k, (i+1)*k)
-        return result
+        open_file.close()
 
     def _line_to_mysql_and_redis(self, line):
         """Load line data to redis.
@@ -303,6 +252,10 @@ class LoadData(object):
 
 
 if __name__ == '__main__':
+    """Main function.
 
-    load = LoadData('D:/home/jsdx/jsdx_2015111313')
+        Args:
+            no
+   """
+    load = LoadData('D:/home/jsdx/unbacked_redis_files/jsdx_2015111301')
     load.main()
